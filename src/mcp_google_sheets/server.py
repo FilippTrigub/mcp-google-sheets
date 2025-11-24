@@ -25,12 +25,18 @@ from googleapiclient.discovery import build
 import google.auth
 
 # Constants
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive.file']
 CREDENTIALS_CONFIG = os.environ.get('CREDENTIALS_CONFIG')
 TOKEN_PATH = os.environ.get('TOKEN_PATH', 'token.json')
 CREDENTIALS_PATH = os.environ.get('CREDENTIALS_PATH', 'credentials.json')
 SERVICE_ACCOUNT_PATH = os.environ.get('SERVICE_ACCOUNT_PATH', 'service_account.json')
 DRIVE_FOLDER_ID = os.environ.get('DRIVE_FOLDER_ID', '')  # Working directory in Google Drive
+
+# OAuth2 Standard Configuration
+GOOGLE_SHEETS_CLIENT_ID = os.environ.get('GOOGLE_SHEETS_CLIENT_ID', '')
+GOOGLE_SHEETS_CLIENT_SECRET = os.environ.get('GOOGLE_SHEETS_CLIENT_SECRET', '')
+OAUTH2_AUTHORIZATION_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
+OAUTH2_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 
 @dataclass
 class SpreadsheetContext:
@@ -63,19 +69,67 @@ async def spreadsheet_lifespan(server: FastMCP) -> AsyncIterator[SpreadsheetCont
             print(f"Error using service account authentication: {e}")
             creds = None
     
-    # Fall back to OAuth flow if service account auth failed or not configured
-    if not creds:
-        print("Trying OAuth authentication flow")
-        if os.path.exists(TOKEN_PATH):
-            with open(TOKEN_PATH, 'r') as token:
-                creds = Credentials.from_authorized_user_info(json.load(token), SCOPES)
-                
-        # If credentials are not valid or don't exist, get new ones
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                try:
+    # Try OAuth2 Standard Flow with Client ID and Client Secret
+    if not creds and GOOGLE_SHEETS_CLIENT_ID and GOOGLE_SHEETS_CLIENT_SECRET:
+        print("Trying OAuth2 standard flow with client credentials")
+        try:
+            # Check if we have a saved token
+            if os.path.exists(TOKEN_PATH):
+                with open(TOKEN_PATH, 'r') as token:
+                    token_data = json.load(token)
+                    creds = Credentials(
+                        token=token_data.get('token'),
+                        refresh_token=token_data.get('refresh_token'),
+                        token_uri=OAUTH2_TOKEN_URL,
+                        client_id=GOOGLE_SHEETS_CLIENT_ID,
+                        client_secret=GOOGLE_SHEETS_CLIENT_SECRET,
+                        scopes=SCOPES
+                    )
+            
+            # If credentials are not valid or don't exist, get new ones
+            if not creds or not creds.valid:
+                if creds and creds.expired and creds.refresh_token:
+                    print("Refreshing expired OAuth2 token")
+                    creds.refresh(Request())
+                    # Save refreshed token
+                    with open(TOKEN_PATH, 'w') as token:
+                        token.write(creds.to_json())
+                else:
+                    # Create OAuth2 client config for standard flow
+                    client_config = {
+                        "installed": {
+                            "client_id": GOOGLE_SHEETS_CLIENT_ID,
+                            "client_secret": GOOGLE_SHEETS_CLIENT_SECRET,
+                            "auth_uri": OAUTH2_AUTHORIZATION_URL,
+                            "token_uri": OAUTH2_TOKEN_URL,
+                            "redirect_uris": ["http://localhost"]
+                        }
+                    }
+                    
+                    flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
+                    creds = flow.run_local_server(port=0)
+                    
+                    # Save the credentials for the next run
+                    with open(TOKEN_PATH, 'w') as token:
+                        token.write(creds.to_json())
+                    print("Successfully authenticated using OAuth2 standard flow")
+        except Exception as e:
+            print(f"Error with OAuth2 standard flow: {e}")
+            creds = None
+    
+    # Fall back to OAuth flow with credentials file if OAuth2 standard flow failed or not configured
+    if not creds and CREDENTIALS_PATH and os.path.exists(CREDENTIALS_PATH):
+        print("Trying OAuth authentication flow with credentials file")
+        try:
+            if os.path.exists(TOKEN_PATH):
+                with open(TOKEN_PATH, 'r') as token:
+                    creds = Credentials.from_authorized_user_info(json.load(token), SCOPES)
+                    
+            # If credentials are not valid or don't exist, get new ones
+            if not creds or not creds.valid:
+                if creds and creds.expired and creds.refresh_token:
+                    creds.refresh(Request())
+                else:
                     flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
                     creds = flow.run_local_server(port=0)
                     
@@ -83,9 +137,9 @@ async def spreadsheet_lifespan(server: FastMCP) -> AsyncIterator[SpreadsheetCont
                     with open(TOKEN_PATH, 'w') as token:
                         token.write(creds.to_json())
                     print("Successfully authenticated using OAuth flow")
-                except Exception as e:
-                    print(f"Error with OAuth flow: {e}")
-                    creds = None
+        except Exception as e:
+            print(f"Error with OAuth flow: {e}")
+            creds = None
     
     # Try Application Default Credentials if no creds thus far
     # This will automatically check GOOGLE_APPLICATION_CREDENTIALS, gcloud auth, and metadata service

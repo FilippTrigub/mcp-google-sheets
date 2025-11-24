@@ -196,17 +196,28 @@ The server needs credentials to access Google APIs. Choose one method:
         *   `DRIVE_FOLDER_ID`: The ID of the shared Google Drive folder.
         *(See [Ultra Quick Start](#-ultra-quick-start-using-uvx) for OS-specific examples)*
 
-### Method B: OAuth 2.0 (Interactive / Personal Use) 🧑‍💻
+### Method B: OAuth 2.0 Standard (Interactive / Personal Use) 🧑‍💻
 
-*   **Why?** For personal use or local development where interactive browser login is okay.
+*   **Why?** For personal use or local development where interactive browser login is okay. Uses standard OAuth2 flow with client credentials.
 *   **Steps:**
-    1.  **Configure OAuth Consent Screen:** In GCP Console -> "APIs & Services" -> "OAuth consent screen". Select "External", fill required info, add scopes (`.../auth/spreadsheets`, `.../auth/drive`), add test users if needed.
+    1.  **Configure OAuth Consent Screen:** In GCP Console -> "APIs & Services" -> "OAuth consent screen". Select "External", fill required info, add scopes (`https://www.googleapis.com/auth/spreadsheets`, `https://www.googleapis.com/auth/drive.file`), add test users if needed.
+    2.  **Create OAuth Client ID:** In GCP Console -> "APIs & Services" -> "Credentials". "+ CREATE CREDENTIALS" -> "OAuth client ID" -> Type: **Desktop app**. Name it. "CREATE". Copy the **Client ID** and **Client Secret**.
+    3.  **Set Environment Variables:**
+        *   `GOOGLE_SHEETS_CLIENT_ID`: Your OAuth2 Client ID from Google Cloud Console.
+        *   `GOOGLE_SHEETS_CLIENT_SECRET`: Your OAuth2 Client Secret from Google Cloud Console.
+        *   `TOKEN_PATH`: Path to store the user's refresh token after first login (default: `token.json`). Must be writable.
+
+### Method C: OAuth 2.0 with Credentials File (Legacy) 🧑‍💻
+
+*   **Why?** For backward compatibility with existing setups using credentials.json file.
+*   **Steps:**
+    1.  **Configure OAuth Consent Screen:** In GCP Console -> "APIs & Services" -> "OAuth consent screen". Select "External", fill required info, add scopes (`https://www.googleapis.com/auth/spreadsheets`, `https://www.googleapis.com/auth/drive.file`), add test users if needed.
     2.  **Create OAuth Client ID:** In GCP Console -> "APIs & Services" -> "Credentials". "+ CREATE CREDENTIALS" -> "OAuth client ID" -> Type: **Desktop app**. Name it. "CREATE". **Download JSON**.
     3.  **Set Environment Variables:**
         *   `CREDENTIALS_PATH`: Path to the downloaded OAuth credentials JSON file (default: `credentials.json`).
         *   `TOKEN_PATH`: Path to store the user's refresh token after first login (default: `token.json`). Must be writable.
 
-### Method C: Direct Credential Injection (Advanced) 🔒
+### Method D: Direct Credential Injection (Advanced) 🔒
 
 *   **Why?** Useful in environments like Docker, Kubernetes, or CI/CD where managing files is hard, but environment variables are easy/secure. Avoids file system access.
 *   **How?** Instead of providing a *path* to the credentials file, you provide the *content* of the file, encoded in Base64, directly in an environment variable.
@@ -229,7 +240,7 @@ The server needs credentials to access Google APIs. Choose one method:
             export CREDENTIALS_CONFIG="ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb..."
             ```
 
-### Method D: Application Default Credentials (ADC) 🌐
+### Method E: Application Default Credentials (ADC) 🌐
 
 *   **Why?** Ideal for Google Cloud environments (GKE, Compute Engine, Cloud Run) and local development with `gcloud auth application-default login`. No explicit credential files needed.
 *   **How?** Uses Google's Application Default Credentials chain to automatically discover credentials from multiple sources.
@@ -253,8 +264,9 @@ The server checks for credentials in this order:
 
 1.  `CREDENTIALS_CONFIG` (Base64 content)
 2.  `SERVICE_ACCOUNT_PATH` (Path to Service Account JSON)
-3.  `CREDENTIALS_PATH` (Path to OAuth JSON) - triggers interactive flow if token is missing/expired
-4.  **Application Default Credentials (ADC)** - automatic fallback
+3.  `GOOGLE_SHEETS_CLIENT_ID` + `GOOGLE_SHEETS_CLIENT_SECRET` (OAuth2 Standard Flow)
+4.  `CREDENTIALS_PATH` (Path to OAuth JSON) - triggers interactive flow if token is missing/expired
+5.  **Application Default Credentials (ADC)** - automatic fallback
 
 **Environment Variable Summary:**
 
@@ -263,7 +275,9 @@ The server checks for credentials in this order:
 | `SERVICE_ACCOUNT_PATH` | Service Account             | Path to the Service Account JSON key file (MCP server specific). | -                |
 | `GOOGLE_APPLICATION_CREDENTIALS` | ADC                   | Path to service account key (Google's standard variable).       | -                |
 | `DRIVE_FOLDER_ID`      | Service Account             | ID of the Google Drive folder shared with the Service Account.  | -                |
-| `CREDENTIALS_PATH`     | OAuth 2.0                   | Path to the OAuth 2.0 Client ID JSON file.                    | `credentials.json` |
+| `GOOGLE_SHEETS_CLIENT_ID` | OAuth 2.0 Standard       | OAuth2 Client ID from Google Cloud Console.                     | -                |
+| `GOOGLE_SHEETS_CLIENT_SECRET` | OAuth 2.0 Standard   | OAuth2 Client Secret from Google Cloud Console.                 | -                |
+| `CREDENTIALS_PATH`     | OAuth 2.0 (Legacy)          | Path to the OAuth 2.0 Client ID JSON file.                    | `credentials.json` |
 | `TOKEN_PATH`           | OAuth 2.0                   | Path to store the generated OAuth token.                        | `token.json`     |
 | `CREDENTIALS_CONFIG`   | Service Account / OAuth 2.0 | Base64 encoded JSON string of credentials content.              | -                |
 
@@ -360,7 +374,30 @@ Add the server config to `claude_desktop_config.json` under `mcpServers`. Choose
 </details>
 
 <details>
-<summary>🔵 Config: uvx + OAuth 2.0</summary>
+<summary>🔵 Config: uvx + OAuth 2.0 Standard (Recommended)</summary>
+
+```json
+{
+  "mcpServers": {
+    "google-sheets": {
+      "command": "uvx",
+      "args": ["mcp-google-sheets@latest"],
+      "env": {
+        "GOOGLE_SHEETS_CLIENT_ID": "your-client-id.apps.googleusercontent.com",
+        "GOOGLE_SHEETS_CLIENT_SECRET": "your-client-secret",
+        "TOKEN_PATH": "/full/path/to/your/token.json"
+      }
+    }
+  }
+}
+```
+*Note: A browser may open for Google login on first use. Ensure TOKEN_PATH is writable.*
+
+**🍎 macOS Note:** If you get a `spawn uvx ENOENT` error, replace `"command": "uvx"` with `"command": "/Users/yourusername/.local/bin/uvx"` (replace `yourusername` with your actual username).
+</details>
+
+<details>
+<summary>🔵 Config: uvx + OAuth 2.0 with Credentials File (Legacy)</summary>
 
 ```json
 {
