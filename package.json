@@ -1,0 +1,47 @@
+{
+  "name": "mcp-google-sheets",
+  "version": "1.0.0",
+  "description": "MCP server for Google Sheets integration - Your AI Assistant's Gateway to Google Sheets!",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "mcp-google-sheets": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc && chmod +x dist/index.js",
+    "watch": "tsc --watch",
+    "prepare": "npm run build",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "google-sheets",
+    "google-drive",
+    "ai",
+    "claude"
+  ],
+  "author": "Filipp Trigub <filipp.trigub@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FilippTrigub/mcp-google-sheets.git"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "dotenv": "^17.2.3",
+    "google-auth-library": "^10.5.0",
+    "googleapis": "^144.0.0",
+    "zod": "^3.25.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
