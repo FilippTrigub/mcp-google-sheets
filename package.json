@@ -1,6 +1,6 @@
 {
   "name": "mcp-google-sheets",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "MCP server for Google Sheets integration - Your AI Assistant's Gateway to Google Sheets!",
   "type": "module",
   "main": "dist/index.js",
