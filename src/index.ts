@@ -15,14 +15,14 @@ import {
   ErrorCode,
   McpError
 } from '@modelcontextprotocol/sdk/types.js';
-import { google } from 'googleapis';
+import { google, sheets_v4, drive_v3 } from 'googleapis';
 import { authenticateGoogle } from './auth.js';
 import { registerTools } from './tools.js';
 import { registerResources } from './resources.js';
 
 // Global services
-let sheetsService: any;
-let driveService: any;
+let sheetsService: sheets_v4.Sheets;
+let driveService: drive_v3.Drive;
 let folderIdContext: string | undefined;
 
 /**
@@ -32,8 +32,8 @@ async function initializeServices() {
   try {
     const auth = await authenticateGoogle();
     
-    sheetsService = google.sheets({ version: 'v4', auth });
-    driveService = google.drive({ version: 'v3', auth });
+    sheetsService = google.sheets({ version: 'v4', auth: auth as any });
+    driveService = google.drive({ version: 'v3', auth: auth as any });
     folderIdContext = process.env.DRIVE_FOLDER_ID;
     
     console.error('Google Sheets services initialized successfully');

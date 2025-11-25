@@ -512,14 +512,14 @@ async function batchUpdateCellsHandler(args: any) {
 
   const data = Object.entries(ranges).map(([range, values]) => ({
     range: `${sheet}!${range}`,
-    values
+    values: values as any[][]
   }));
 
   const result = await sheetsService.spreadsheets.values.batchUpdate({
     spreadsheetId: spreadsheet_id,
     requestBody: {
       valueInputOption: 'USER_ENTERED',
-      data
+      data: data as any
     }
   });
 
@@ -527,7 +527,7 @@ async function batchUpdateCellsHandler(args: any) {
     content: [
       {
         type: 'text',
-        text: JSON.stringify(result.data, null, 2)
+        text: JSON.stringify(result?.data || {}, null, 2)
       }
     ]
   };
