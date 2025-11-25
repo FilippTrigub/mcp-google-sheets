@@ -1,6 +1,6 @@
 {
   "name": "mcp-google-sheets",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "MCP server for Google Sheets integration - Your AI Assistant's Gateway to Google Sheets!",
   "type": "module",
   "main": "dist/index.js",
@@ -11,7 +11,8 @@
     "build": "tsc && chmod +x dist/index.js",
     "watch": "tsc --watch",
     "prepare": "npm run build",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "mcp",
@@ -19,7 +20,11 @@
     "google-sheets",
     "google-drive",
     "ai",
-    "claude"
+    "claude",
+    "gemini",
+    "oauth2",
+    "spreadsheet",
+    "automation"
   ],
   "author": "Filipp Trigub <filipp.trigub@gmail.com>",
   "license": "MIT",
@@ -27,6 +32,10 @@
     "type": "git",
     "url": "https://github.com/FilippTrigub/mcp-google-sheets.git"
   },
+  "bugs": {
+    "url": "https://github.com/FilippTrigub/mcp-google-sheets/issues"
+  },
+  "homepage": "https://github.com/FilippTrigub/mcp-google-sheets#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
     "dotenv": "^17.2.3",
@@ -39,7 +48,10 @@
     "typescript": "^5.7.2"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE",
+    "GEMINI_CLI_SETUP.md"
   ],
   "engines": {
     "node": ">=18.0.0"
