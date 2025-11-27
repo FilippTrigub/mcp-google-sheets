@@ -1,0 +1,64 @@
+{
+  "company": "NVIDIA Corporation",
+  "report_type": "Annual Report",
+  "extraction_date": "2025-11-27T10:48:59.892395",
+  "key_metrics": {
+    "revenue_mentions": [
+      39300.0,
+      35600.0,
+      130500.0,
+      39300.0,
+      130500.0,
+      43000.0,
+      5200.0,
+      3600.0,
+      400.0,
+      35600.0
+    ],
+    "max_revenue_mentioned": 130500.0,
+    "avg_revenue_mentioned": 46300.0,
+    "year_mentions": {
+      "2026": 3,
+      "2025": 20,
+      "2024": 16,
+      "2016": 1
+    }
+  },
+  "business_segments": {
+    "AI": 26,
+    "Cloud": 5,
+    "Automotive": 3,
+    "Data Center": 2,
+    "Gaming": 2,
+    "Professional Visualization": 1,
+    "GPU": 0,
+    "Machine Learning": 0,
+    "Deep Learning": 0
+  },
+  "financial_highlights": {
+    "percentage_mentions": {
+      "count": 86,
+      "average": 62.91,
+      "max": 147.0,
+      "min": 0.4
+    }
+  },
+  "market_insights": {
+    "Research & Development": 4,
+    "Growth": 2,
+    "Competition": 1,
+    "Innovation": 0,
+    "Leadership": 0,
+    "Market Share": 0,
+    "Investment": 0
+  },
+  "technology_focus": {
+    "RTX": 4,
+    "DRIVE": 4,
+    "GeForce": 3,
+    "Omniverse": 3,
+    "DGX": 2,
+    "Grace": 2,
+    "Jetson": 2
+  }
+}
