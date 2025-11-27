@@ -1,0 +1,20 @@
+{
+  "company": "NVIDIA Corporation",
+  "fiscal_year": "2024",
+  "total_revenue": 60922,
+  "revenue_growth_yoy": 126.0,
+  "data_center_revenue": 47514,
+  "data_center_growth": 216.6,
+  "gross_margin": 72.7,
+  "operating_margin": 54.1,
+  "net_income": 29760,
+  "key_insights": [
+    "Revenue more than doubled YoY (126% growth) driven by AI demand",
+    "Data Center segment grew 217% to become 78% of total revenue",
+    "Gross margin expanded to 72.7% from 56.9% in FY2023",
+    "Operating margin improved dramatically to 54.1% from 15.7%",
+    "Gaming revenue grew 15% to $10.4B",
+    "Automotive revenue tripled to $2.9B",
+    "Strong geographic diversification across US, Taiwan, China, Singapore"
+  ]
+}
